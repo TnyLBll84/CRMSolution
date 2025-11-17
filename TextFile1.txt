@@ -1,0 +1,46 @@
+Business Use case:
+-- Build Menu System (Basic functions to manage customers)
+-- Manage Fix number of customers (5 Customers)
+-- System will just store customers' names
+-- Implement below Operatons using a Menu System:
+
+
+---- Menu System (Customer Relationship Management):
+
+	1. Add Customer
+	2. Update Customer Info.
+	3. Delete Customer
+	4. Search Customer By Name
+	5. Exit
+
+
+---- Operations Details:
+
+---- 1. Add Customer
+		* ask the user to type customer name
+		* store customer name
+
+---- 2. Update Customer Info.
+		* ask the user to type customer name
+		* search the customer by name
+		* if exist, ask the user to type the new name , and replace the old one
+		* confirm the success of operation to end user
+		* if not exist, inform the user that customer not found
+
+---- 3. Delete Customer
+		* ask the user to type customer name
+		* search the customer by name
+		* if exist, delete the customer from the storage
+		* confirm the success of operation to end user
+		* if not exist, inform the user that customer not found
+
+---- 4. Search Customer By Name
+		* ask the user to type customer name
+		* search the customer by name
+		* if exist, display the customer name to end user
+		* if not exist, inform the user that customer not found
+
+---- 5. View all Customers
+		* display all stored customer names to end user
+
+---- 6. Exit

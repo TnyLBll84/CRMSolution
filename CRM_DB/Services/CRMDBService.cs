@@ -45,7 +45,7 @@ namespace CRM_DB
             // LINQ Query
             // Construct Query Statement in C# using LINQ
             IQueryable<Customer> query = from customer in this._context.Customers
-                                     where customer.CustId == id
+                                     where customer.CustomerId == id
                                      select customer;
 
             //Execute the Query statement
@@ -148,7 +148,7 @@ namespace CRM_DB
         }
         #endregion
 
-        #region Blog Complaint Operations
+        #region CRM Complaint Operations
         public void AddComplaint(Complaint complaint)
         {
             if (complaint == null)

@@ -12,11 +12,14 @@ namespace CRM_DB
 
         #region Public Instance Members (Properties)
         [Key]
-        public int CustId { get; set; }
+        public int CustomerId { get; set; }
 
         public string Name { get; set; }
 
         public int Age { get; set; }
+
+        //Navigation Properties (for Relationships(One to Many))
+        public virtual List<Complaint> Complaints { get; set; }
 
         #endregion
 

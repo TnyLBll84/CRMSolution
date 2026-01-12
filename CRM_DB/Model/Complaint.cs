@@ -15,9 +15,15 @@ namespace CRM_DB
 
         public int CustomerId { get; set; }
 
+        public int ProductId { get; set; }
+
+        public string Status { get; set; }
+
         public string Description { get; set; }
 
-        public string ComplaintType { get; set; }
+        //Navigation Properties (for Relationships) 
+        public virtual Customer Customer { get; set; }
+        public virtual Product Product { get; set; }
         #endregion
     }
 }

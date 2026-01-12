@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection.Metadata;
@@ -44,15 +45,14 @@ namespace CRM_DB
         {
             // LINQ Query
             // Construct Query Statement in C# using LINQ
-            IQueryable<Customer> query = from customer in this._context.Customers
-                                     where customer.CustomerId == id
-                                     select customer;
+            Customer customerObj = this._context
+                                       .Customers
+                                       .Include("Complaints") // Using Navigatinal Property
+                                       .Where(c => c.CustomerId == id).FirstOrDefault();
 
-            //Execute the Query statement
-            Customer customerObj = query.FirstOrDefault();
 
             return customerObj;
-
+        
         }
         public void UpdateCustomer(Customer newCustomer)
         {

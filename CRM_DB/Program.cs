@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using ConsoleTables;
+using Microsoft.Extensions.Logging;
 using Microsoft.VisualBasic;
 using System.Collections;
 using System.Collections.Generic;
@@ -8,6 +9,7 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Mail;
 using System.Net.Mime;
+using System.Reflection.Metadata;
 
 namespace CRM_DB
 
@@ -15,22 +17,7 @@ namespace CRM_DB
 
     internal class Program
     {
-        #region Global Static Data Members
-        // Create a list to store all customer objects
-        static List<Customer> customers = new List<Customer>();
-
-        // Create a list to store all product objects
-        static List<Product> products = new List<Product>();
-
-        // Create a list to store all complaint objects
-        static List<Complaint> complaints = new List<Complaint>();
-
-        //static Queue<Complaint> normalComplaintQueue = new Queue<Complaint>();
-        static PriorityQueue<Complaint, int> urgentComplaintQueue = new PriorityQueue<Complaint, int>();
-
-        static LinkedList<Appointment> appointmentList = new LinkedList<Appointment>();
-
-        #endregion
+        static CRMDBService cRMDBService = new CRMDBService();
 
         #region Applicaton EntryPoint (Main Menu)
         static void Main(string[] args)
@@ -139,6 +126,7 @@ namespace CRM_DB
         #endregion
 
         #region Front Menu Choices
+        #region Customer Menu
         static void CustomerMenu()
         {
             // Step 1: Begin a loop so the customer menu keeps repeating until the user chooses to exit
@@ -191,16 +179,36 @@ namespace CRM_DB
             }
         }
 
-        private static void ViewAllCustomers()
-        {
-            throw new NotImplementedException();
-        }
-
         private static void AddCustomer()
         {
-            throw new NotImplementedException();
+            Console.Write("Please Type Customer Name: ");
+            string customerName = Console.ReadLine();
+            cRMDBService.AddCustomer(
+                    new Customer
+                    {
+                        Name = customerName,
+                        Age = ReadInt("Please Type Customer Age: ")
+                    });
+
+            Console.WriteLine("Done Adding New Customer\n");
         }
 
+        private static void ViewAllCustomers()
+        {
+            Console.WriteLine("List Of Customers");
+            Console.WriteLine("***************");
+            var table = new ConsoleTable("Id", "Name", "Age");
+
+            foreach (var customer in cRMDBService.GetAllCustomers())
+            {
+                table.AddRow(customer.CustomerId, customer.Name, customer.Age);
+            }
+            table.Write();
+        }
+        #endregion
+
+
+        #region Product Menu
         static void ProductMenu()
         {
             // Step 1: Begin an infinite loop so this menu stays active until the user chooses to exit
@@ -252,16 +260,39 @@ namespace CRM_DB
             }
         }
 
-        private static void ViewAllProducts()
-        {
-            throw new NotImplementedException();
-        }
-
         private static void AddProduct()
         {
-            throw new NotImplementedException();
+            Console.Write("Please Type Product Name: ");
+            string productName = Console.ReadLine();
+            cRMDBService.AddProduct(
+                    new Product
+                    {
+                        Name = productName,
+                        Price = ReadInt("Please Type Product Price: ")
+                    });
+
+            Console.WriteLine("Done Adding New Customer\n");
+
         }
 
+        private static void ViewAllProducts()
+        {
+            Console.WriteLine("List Of Products");
+            Console.WriteLine("***************");
+            var table = new ConsoleTable("Id", "Name", "Price");
+
+            foreach (var product in cRMDBService.GetAllProducts())
+            {
+                table.AddRow(product.ProductId, product.Name, product.Price);
+            }
+            table.Write();
+
+        }
+
+        #endregion
+
+
+        #region Complaint Menu
         static void ComplaintMenu()
         {
             // Step 1: Begin a continuous loop so the complaint menu stays active until the user selects the return option
@@ -275,11 +306,13 @@ namespace CRM_DB
                 // Step 5: Show menu option 3 which displays all complaints in the system
                 Console.WriteLine("   2. View All Complaints");
 
+
+                Console.WriteLine("   3. View All By Customer ID");
                 // Step 7: Show menu option 5 which returns from this menu to the main menu
-                Console.WriteLine("   \n3. Return to Main Menu\n");
+                Console.WriteLine("   \n4. Return to Main Menu\n");
 
                 // Step 8: Read the user's choice for options 1 through 5 and convert the input to an integer
-                int option = ReadInt("Enter your choice (1 - 3): ");
+                int option = ReadInt("Enter your choice (1 - 4): ");
 
                 // Step 9: Clear the console screen to prepare for the next action display
                 Console.Clear();
@@ -295,8 +328,11 @@ namespace CRM_DB
                     case 2:
                         ViewAllComplaints();
                         break;
-                    // Step 15: If the user chooses option 5, return to exit this menu and return to the main menu
                     case 3:
+                        GetComplaintsByCustID();
+                        break;
+                    // Step 15: If the user chooses option 5, return to exit this menu and return to the main menu
+                    case 4:
                         return;
                 }
 
@@ -311,16 +347,75 @@ namespace CRM_DB
             }
         }
 
-        private static void ViewAllComplaints()
-        {
-            throw new NotImplementedException();
-        }
 
         private static void AddComplaint()
         {
-            throw new NotImplementedException();
+            Console.Write("Please type Customer ID: ");
+            int customerID = int.Parse(Console.ReadLine());
+
+            Console.Write("Please type Product ID: ");
+            int productID = int.Parse(Console.ReadLine());
+
+            Console.Write("Please type Complaint Description: ");
+            string description = Console.ReadLine();
+
+
+            cRMDBService.AddComplaint(new Complaint()
+            {
+                CustomerId = customerID,
+                ProductId = productID,
+                Status = "Opened",
+                Description = description
+
+
+            });
+
+            Console.WriteLine($"Done Adding Complaint information");
+
         }
 
+        private static void ViewAllComplaints()
+        {
+            #region Third Party Table Version
+            var table = new ConsoleTable("Id", "Customer ID", "Product ID", "Status", "Description");
+
+            foreach (Complaint comp in cRMDBService.GetAllComplaints())
+            {
+                table.AddRow(comp.ComplaintId, comp.CustomerId, comp.ProductId, comp.Status, comp.Description);
+            }
+
+            table.Write();
+            #endregion
+
+        }
+
+        private static void GetComplaintsByCustID()
+        {
+            Console.Write("Please type Customer ID: ");
+            int customerID = int.Parse(Console.ReadLine());
+
+            Customer cust = cRMDBService.GetCustomerByID(customerID);
+
+
+            var table = new ConsoleTable("Id", "Name", "Age");
+            table.AddRow(cust.CustomerId, cust.Name, cust.Age);
+            table.Write();
+
+
+            table = new ConsoleTable("Id", "Customer ID", "Product ID", "Status", "Description");
+
+            foreach (Complaint comp in cust.Complaints)
+            {
+                table.AddRow(comp.ComplaintId, comp.CustomerId, comp.ProductId, comp.Status, comp.Description);
+            }
+
+            table.Write();
+        }
+
+        #endregion
+
+
+        #region Appointment Menu
         static void AppointmentMenu()
         {
             // Step 1: Begin a continuous loop so the complaint menu stays active until the user selects the return option
@@ -381,6 +476,7 @@ namespace CRM_DB
             throw new NotImplementedException();
         }
 
+        #endregion
         #endregion
 
         #region Input Helpers

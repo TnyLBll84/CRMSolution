@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using CRM_DB.Model;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,7 +17,7 @@ namespace CRM_DB.Model
         // to the backend database
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseSqlServer("Data Source=nomoremrwifi-su;Initial Catalog=CRMDB;Integrated Security=True;Encrypt=False");
+            optionsBuilder.UseSqlServer("Data Source=nomoremrwifi-su;Initial Catalog=CRM_DB;Integrated Security=True;Encrypt=False");
         }
     }
 }

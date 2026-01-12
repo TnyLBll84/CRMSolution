@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using CRM_DB.Model;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -15,6 +16,7 @@ namespace CRM_DB.Model
         public int CustId { get; set; }
         public string Name { get; set; } = string.Empty;
         public int Age { get; set; }
+
         #endregion
 
     }

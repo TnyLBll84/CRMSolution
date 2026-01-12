@@ -96,14 +96,23 @@ namespace CRM_DB
             // LINQ Query
             // Construct Query Statement in C# using LINQ
             IQueryable<Product> query = from product in this._context.Products
-                                         where product.ProductId == id
-                                         select product;
+                                        where product.ProductId == id
+                                        select product;
 
             //Execute the Query statement
             Product productObj = query.FirstOrDefault();
 
             return productObj;
-
+        }
+        public void UpdateProduct(Product newProduct)
+        {
+            this._context.Products.Update(newProduct);
+            this._context.SaveChanges();
+        }
+        public void DeleteProduct(Product product)
+        {
+            this._context.Products.Remove(product);
+            this._context.SaveChanges();
         }
         #endregion
 
@@ -131,7 +140,6 @@ namespace CRM_DB
 
             return appointments;
         }
-
         public Appointment GetAppointmentByID(int id)
         {
             // LINQ Query
@@ -145,6 +153,16 @@ namespace CRM_DB
 
             return appointmentObj;
 
+        }
+        public void UpdateAppointment(Appointment newAppointment)
+        {
+            this._context.Appointments.Update(newAppointment);
+            this._context.SaveChanges();
+        }
+        public void DeleteAppointment(Appointment appointment)
+        {
+            this._context.Appointments.Remove(appointment);
+            this._context.SaveChanges();
         }
         #endregion
 
@@ -186,6 +204,16 @@ namespace CRM_DB
 
             return complaintObj;
 
+        }
+        public void UpdateComplaint(Complaint newComplaint)
+        {
+            this._context.Complaints.Update(newComplaint);
+            this._context.SaveChanges();
+        }
+        public void DeleteComplaint(Complaint complaint)
+        {
+            this._context.Complaints.Remove(complaint);
+            this._context.SaveChanges();
         }
         #endregion
 

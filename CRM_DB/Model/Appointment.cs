@@ -6,23 +6,16 @@ using System.Threading.Tasks;
 
 namespace CRM_DB
 {
-
-    internal class Customer
+    internal class Appointment
     {
-
-        #region Public Instance Members (Properties)
+        #region pulbic Properties (Data Members)
         [Key]
-        public int CustId { get; set; }
+        public int AppointmentId { get; set; }
 
-        public string Name { get; set; }
+        public int CustomerId { get; set; }
 
-        public int Age { get; set; }
+        public DateTime AppointmentTime { get; set; }
 
         #endregion
-
     }
 }
-
-
-
-

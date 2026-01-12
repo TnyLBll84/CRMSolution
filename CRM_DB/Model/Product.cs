@@ -6,23 +6,15 @@ using System.Threading.Tasks;
 
 namespace CRM_DB
 {
-
-    internal class Customer
+    internal class Product
     {
-
-        #region Public Instance Members (Properties)
+        #region public Properties (Data Members)
         [Key]
-        public int CustId { get; set; }
+        public int ProductId { get; set; }
 
         public string Name { get; set; }
 
-        public int Age { get; set; }
-
+        public decimal Price { get; set; }
         #endregion
-
     }
 }
-
-
-
-

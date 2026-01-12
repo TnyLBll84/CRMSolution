@@ -9,38 +9,36 @@ namespace CRMApp_OOP
     internal class Product
     {
         #region Static Data Members
-        static private int nextProductID = 0;
+        private static int nextProductID = 0;
         #endregion
 
         #region Constructors
         public Product()
         {
-            this.Id = ++nextProductID;
-
+            nextProductID++;
+            Id = nextProductID;
         }
-        public Product(string name, decimal price) : this()   // :this() is calling the default constructor
+
+        public Product(string name, decimal price) : this()
         {
-            this.Name = name;
-            this.Price = price;
+            Name = name;
+            Price = price;
         }
         #endregion
 
         #region private Fields (Data Members)
         #endregion
 
-        #region public Properties (Data Members)
-        public int Id { get; set; }
-        public string Name { get; set; }
+        #region public Properties (Data Members
+        public int Id { get; private set; }
+
+        public string Name { get; set; } = string.Empty;
 
         public decimal Price { get; set; }
         #endregion
 
         #region Methods (Behavior)
-        public decimal GetPriceAfterDiscount(decimal discountRate)
-        {
-            return Price * (1 - discountRate);
-        }
+        public decimal GetPriceAfterDiscount(decimal discountRate) => Price * (1 - discountRate);
         #endregion
-
     }
 }

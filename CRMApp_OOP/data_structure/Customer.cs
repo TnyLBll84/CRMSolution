@@ -7,6 +7,12 @@ using System.Threading.Tasks;
 
 namespace CRMApp_OOP
 {
+
+    /*TASKS TO STILL BE DONE
+     * I NEED TO ADD SALARIES
+     * I NEED TO ADD MARRIED STATUS*/
+
+
     // Value Type Data Strcuture
     internal struct FullName
     {
@@ -14,64 +20,84 @@ namespace CRMApp_OOP
         public string lastName;
     }
 
-    internal class Customer
+    internal class Customer : IComparable<Customer>
     {
 
+        #region Static Data Members
+        private static int nextCustomerID = 0;
+        #endregion
+
+        #region Private Instance
+        #endregion
+
         #region Constructors
-        // default Constructor (its a method that has same class name)
         public Customer()
         {
-            // this keyword referes to the new constructed object
-            //this.Id = 0;
-            //this.Age = 20;
-            //this.Name = new FullName();
+            // default ctor
         }
 
-
-        // overloaded Constructor
-        public Customer(int id, string firstName, string lastName, int age)
+        public Customer(string firstName = "", string lastName = "", int age = 30, bool married = false, decimal salary = 0m)
         {
-            // this keyword referes to the new constructed object
-            this.Id = id;
-            this.Age = age;
-            this.Name.firstName = firstName;
-            this.Name.lastName = lastName;
+            Id = Interlocked.Increment(ref nextCustomerID);
+            FirstName = firstName;
+            LastName = lastName;
+            Age = age;
+            Married = married;
+            Salary = salary;
         }
         #endregion
 
-        #region Static Data Members
-        // Global Variable conrolled by Customer Class
-        public static int nextCustomerID = 0;
+        #region IComparable Implementation
+        public int CompareTo(Customer? other)
+        {
+            if (other is null)
+            {
+                throw new ArgumentNullException(nameof(other), "Compared customer cannot be null");
+            }
+            return this.FirstName.CompareTo(other.FirstName);
+        }
         #endregion
 
-        #region Private Instance Data Members (Fields)
-        private FullName name;
+        #region Properties
+        public int Id { get; private set; }
+
+        public string FirstName { get; set; } = string.Empty;
+
+        public string LastName { get; set; } = string.Empty;
+
         private int age;
-        #endregion
-
-        # region Public Instance Members (Properties)
-        public int Id { get; set; }
-
-        public ref FullName Name => ref name;
 
         public int Age
         {
-            get { return age; }
-            // Age Range [20,65]
+            get => age;
             set
             {
                 if (value < 20 || value > 65)
-                {
-                    //Generat Execption 
-                    throw new ArgumentException("Age must be within Range 20 and 65");
-                }
-                else
-                {
-                    age = value;
-                }
+                    throw new ArgumentException("Age must be within range 20 and 65");
+                age = value;
             }
-
         }
+
+        private decimal salary;
+
+        public decimal Salary
+        {
+            get => salary;
+            set
+            {
+                if (value < 0m)
+                    throw new ArgumentException("Salary cannot be negative");
+                salary = value;
+            }
+        }
+
+        public bool Married { get; set; }
+
+
         #endregion
     }
 }
+
+
+
+

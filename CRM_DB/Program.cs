@@ -347,7 +347,6 @@ namespace CRM_DB
             }
         }
 
-
         private static void AddComplaint()
         {
             Console.Write("Please type Customer ID: ");

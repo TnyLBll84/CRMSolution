@@ -10,6 +10,8 @@ using System.Net.Http.Headers;
 using System.Net.Mail;
 using System.Net.Mime;
 using System.Reflection.Metadata;
+using System.IO;
+using CRM_DB;
 
 namespace CRM_DB
 
@@ -19,9 +21,27 @@ namespace CRM_DB
     {
         static CRMDBService cRMDBService = new CRMDBService();
 
+        static string logDirectoryPath = String.Empty;
+        static string logFileName = String.Empty;
+        static string logFilePath = String.Empty;
+        static ConsoleLogger consoleLogger = new ConsoleLogger();
+        static TextFileLogger txtFileLogger = new TextFileLogger();
+
         #region Applicaton EntryPoint (Main Menu)
         static void Main(string[] args)
         {
+
+            //Configuration Setup
+            // Create Log Directory if not exists
+            string logDirectoryPath = @"C:\Users\tonyl\OneDrive\Desktop\MSSA\CRMSolution\CRM_DB\Logs\";
+            if (!Directory.Exists(logDirectoryPath))
+            {
+                Directory.CreateDirectory(logDirectoryPath);
+            }
+            logFileName = "log.txt";
+            logFilePath = Path.Combine(logDirectoryPath, logFileName);
+            txtFileLogger.LogFilePath = logFilePath;
+
             // Step 1: Set the text color to green so the menu looks visually appealing
             Console.ForegroundColor = ConsoleColor.Green;
 
@@ -64,7 +84,8 @@ namespace CRM_DB
                     Console.WriteLine("   5. Exit Program\n");
 
                     // Step 13: Read the user's menu selection and convert it into an integer
-                    int mainChoice = ReadInt("Enter your choice (1 - 5): ");
+                    Console.Write("Enter your choice (1 - 5): ");
+                    int mainChoice = int.Parse(Console.ReadLine());
 
                     // Step 14: Clear the screen so the next menu or result displays cleanly
                     Console.Clear();
@@ -99,11 +120,29 @@ namespace CRM_DB
 
                     // Step 20: Clear the screen after completing any menu option
                     Console.Clear();
+
                 }
-                catch (Exception catchAll)
+                catch (FormatException fex) // Catch any unhandled exceptions from the menus
+                {
+                    consoleLogger.LogError("Input format is invalid. Please enter the correct data type.");
+                    txtFileLogger.LogError("Format Exception: " + fex.Message);
+                }
+                catch (OverflowException oex) // Catch any unhandled exceptions from the menus
+                {
+                    consoleLogger.LogError("Input number is too large or too small.");
+                    txtFileLogger.LogError("Overflow Exception: " + oex.Message);
+                }
+                catch (IndexOutOfRangeException iex) // Catch any unhandled exceptions from the menus
+                {
+                    consoleLogger.LogError("Input index is out of range.");
+                    txtFileLogger.LogError("Index Out Of Range Exception: " + iex.Message);
+                }
+                catch (Exception catchAll) // Catch any unhandled exceptions from the menus
                 {
                     // Step 21: Change the text color to red to highlight an error occurred
                     Console.ForegroundColor = ConsoleColor.Red;
+
+                    consoleLogger.LogError("An unexpected error occurred. Please try again.");
 
                     // Step 22: Display the caught error message to the user
                     Console.WriteLine("Error: " + catchAll.Message);
@@ -145,7 +184,8 @@ namespace CRM_DB
                 Console.WriteLine("   \n3. Return to Main Menu\n");
 
                 // Step 9: Read the user's input and convert it to an integer
-                int option = ReadInt("Enter your choice (1 - 3): ");
+                Console.Write("Enter your choice (1 - 3): ");
+                int option = int.Parse(Console.ReadLine());
 
                 // Step 10: Clear the screen after reading input so the next output is clean
                 Console.Clear();
@@ -176,6 +216,8 @@ namespace CRM_DB
 
                 // Step 20: Clear the screen before looping back to show the menu again
                 Console.Clear();
+
+
             }
         }
 
@@ -183,12 +225,15 @@ namespace CRM_DB
         {
             Console.Write("Please Type Customer Name: ");
             string customerName = Console.ReadLine();
-            cRMDBService.AddCustomer(
-                    new Customer
-                    {
-                        Name = customerName,
-                        Age = ReadInt("Please Type Customer Age: ")
-                    });
+
+            Console.Write("Please Type Customer Age: ");
+            int age = int.Parse(Console.ReadLine());
+
+            cRMDBService.AddCustomer(new Customer
+            {
+                Name = customerName,
+                Age = age
+            });
 
             Console.WriteLine("Done Adding New Customer\n");
         }
@@ -227,8 +272,8 @@ namespace CRM_DB
                 Console.WriteLine("   \n3. Return to Main Menu\n");
 
                 // Step 7: Read user choice and convert it to an integer
-                int option = ReadInt("Enter your choice (1 - 3): ");
-
+                Console.Write("Enter your choice (1 - 3): ");
+                int option = int.Parse(Console.ReadLine());
                 // Step 8: Clear the screen to prepare for next action
                 Console.Clear();
 
@@ -264,15 +309,17 @@ namespace CRM_DB
         {
             Console.Write("Please Type Product Name: ");
             string productName = Console.ReadLine();
-            cRMDBService.AddProduct(
-                    new Product
-                    {
-                        Name = productName,
-                        Price = ReadInt("Please Type Product Price: ")
-                    });
 
-            Console.WriteLine("Done Adding New Customer\n");
+            Console.Write("Please Type Product Price: ");
+            int price = int.Parse(Console.ReadLine());
 
+            cRMDBService.AddProduct(new Product
+            {
+                Name = productName,
+                Price = price
+            });
+
+            Console.WriteLine("Done Adding New Product\n");
         }
 
         private static void ViewAllProducts()
@@ -312,8 +359,8 @@ namespace CRM_DB
                 Console.WriteLine("   \n4. Return to Main Menu\n");
 
                 // Step 8: Read the user's choice for options 1 through 5 and convert the input to an integer
-                int option = ReadInt("Enter your choice (1 - 4): ");
-
+                Console.Write("Enter your choice (1 - 4): ");
+                int option = int.Parse(Console.ReadLine());
                 // Step 9: Clear the console screen to prepare for the next action display
                 Console.Clear();
 
@@ -433,8 +480,8 @@ namespace CRM_DB
                 Console.WriteLine("   \n3. Return to Main Menu\n");
 
                 // Step 8: Read the user's choice for options 1 through 5 and convert the input to an integer
-                int option = ReadInt("Enter your choice (1 - 3): ");
-
+                Console.Write("Enter your choice (1 - 3): ");
+                int option = int.Parse(Console.ReadLine());
                 // Step 9: Clear the console screen to prepare for the next action display
                 Console.Clear();
 
@@ -476,135 +523,6 @@ namespace CRM_DB
         }
 
         #endregion
-        #endregion
-
-        #region Input Helpers
-        private static int ReadInt(string prompt, int min = int.MinValue, int max = int.MaxValue)
-        {
-            // Step 1: Declare a variable to hold the converted integer value
-            int value = 0;
-
-            // Step 2: Create a boolean flag that will control the input validation loop
-            bool valid = false;
-
-            // Step 3: Begin the loop that continues until a valid integer is entered
-            while (!valid)
-            {
-                // Step 4: Display the prompt message and wait for user input
-                Console.Write(prompt);
-
-                // Step 5: Read the user’s raw text input from the console
-                string input = Console.ReadLine();
-
-                try
-                {
-                    // Step 6: Attempt to convert the user’s input into an integer
-                    value = Convert.ToInt32(input);
-
-                    // Step 7: Check if the integer is within the allowed range
-                    if (value >= min && value <= max)
-                    {
-                        // Step 8: Mark the input as valid since it meets the range requirement
-                        valid = true;
-                    }
-                    else
-                    {
-                        // Step 9: Inform the user that the number is out of range
-                        Console.ForegroundColor = ConsoleColor.Red;
-                        Console.WriteLine($"Please enter a number between {min} and {max}.");
-                        Console.ResetColor();
-                    }
-                }
-                catch
-                {
-                    // Step 10: If conversion fails, notify the user that the input is not a valid number
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine("Invalid number. Please try again.");
-                    Console.ResetColor();
-                }
-            }
-
-            // Step 11: Return the validated integer value
-            return value;
-        }
-
-        private static decimal ReadDecimal(string prompt, decimal min = decimal.MinValue, decimal max = decimal.MaxValue)
-        {
-            // Step 1: Declare a decimal variable to store the converted result
-            decimal value = 0;
-
-            // Step 2: Create a boolean flag to control validation
-            bool valid = false;
-
-            // Step 3: Start the input validation loop
-            while (!valid)
-            {
-                // Step 4: Display prompt and collect user input
-                Console.Write(prompt);
-                string input = Console.ReadLine();
-
-                try
-                {
-                    // Step 5: Convert the user input into a decimal value
-                    value = Convert.ToDecimal(input, CultureInfo.InvariantCulture);
-
-                    // Step 6: Check whether the value is within the allowed min and max range
-                    if (value >= min && value <= max)
-                    {
-                        // Step 7: Mark validated input so loop can exit
-                        valid = true;
-                    }
-                    else
-                    {
-                        // Step 8: Show range error message in red
-                        Console.ForegroundColor = ConsoleColor.Red;
-                        Console.WriteLine($"Please enter a decimal between {min} and {max}.");
-                        Console.ResetColor();
-                    }
-                }
-                catch
-                {
-                    // Step 9: Notify user that the input is not a valid decimal
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine("Invalid decimal. Please try again.");
-                    Console.ResetColor();
-                }
-            }
-
-            // Step 10: Return the validated decimal value
-            return value;
-        }
-
-        private static bool ReadBool(string prompt)
-        {
-            // Step 1: Begin an infinite loop until the user enters a recognized true or false response
-            while (true)
-            {
-                // Step 2: Display the prompt and read the user’s input
-                Console.Write(prompt);
-                string input = (Console.ReadLine() ?? string.Empty).Trim().ToLowerInvariant();
-
-                // Step 3: Check if the user typed an affirmative response and return true if so
-                if (input == "y" || input == "yes") return true;
-
-                // Step 4: Check if the user typed a negative response and return false if so
-                if (input == "n" || input == "no") return false;
-
-                // Step 5: Inform the user that only yes or no responses are allowed
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("Please answer 'y' or 'n'.");
-                Console.ResetColor();
-            }
-        }
-
-        private static string ReadString(string prompt)
-        {
-            // Step 1: Display the prompt message before reading user input
-            Console.Write(prompt);
-
-            // Step 2: Read the user’s textual response and return an empty string if null
-            return Console.ReadLine() ?? string.Empty;
-        }
         #endregion
     }
 }

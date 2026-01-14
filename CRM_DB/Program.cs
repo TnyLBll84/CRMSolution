@@ -12,6 +12,7 @@ using System.Net.Mime;
 using System.Reflection.Metadata;
 using System.IO;
 using CRM_DB;
+using System.Security.Cryptography;
 
 namespace CRM_DB
 
@@ -20,16 +21,26 @@ namespace CRM_DB
     internal class Program
     {
         static CRMDBService cRMDBService = new CRMDBService();
+        static CryptoService cryptoService = new CryptoService();
 
         static string logDirectoryPath = String.Empty;
+
         static string logFileName = String.Empty;
+        static string csvFileName = String.Empty;
         static string logFilePath = String.Empty;
+
         static ConsoleLogger consoleLogger = new ConsoleLogger();
         static TextFileLogger txtFileLogger = new TextFileLogger();
+        static CSVFileLogger csvFileLogger = new CSVFileLogger();
 
         #region Applicaton EntryPoint (Main Menu)
         static void Main(string[] args)
         {
+
+            //Testing Code
+            byte[] salt = RandomNumberGenerator.GetBytes(16);
+            string cipherText = cryptoService.Encrypt("hi every one", "P@ssw0rd", salt);
+            string plainText = cryptoService.Decrypt(cipherText, "P@ssw0rd", salt);
 
             //Configuration Setup
             // Create Log Directory if not exists
@@ -38,9 +49,16 @@ namespace CRM_DB
             {
                 Directory.CreateDirectory(logDirectoryPath);
             }
-            logFileName = "log.txt";
-            logFilePath = Path.Combine(logDirectoryPath, logFileName);
+
+            // Text log file
+            logFileName = "log.txt"; 
+            logFilePath = Path.Combine(logDirectoryPath, logFileName);                     
             txtFileLogger.LogFilePath = logFilePath;
+
+            // CSV log file string
+            csvFileName = "log.csv"; 
+            string csvFilePath = Path.Combine(logDirectoryPath, csvFileName); 
+            csvFileLogger.LogFilePath = csvFilePath;
 
             // Step 1: Set the text color to green so the menu looks visually appealing
             Console.ForegroundColor = ConsoleColor.Green;
@@ -126,16 +144,28 @@ namespace CRM_DB
                 {
                     consoleLogger.LogError("Input format is invalid. Please enter the correct data type.");
                     txtFileLogger.LogError("Format Exception: " + fex.Message);
+                    csvFileLogger.LogError("Format Exception: " + fex.Message);
+                    Console.WriteLine("Press Enter to continue...");
+                    Console.ReadLine();
+                    Console.Clear();
                 }
                 catch (OverflowException oex) // Catch any unhandled exceptions from the menus
                 {
                     consoleLogger.LogError("Input number is too large or too small.");
                     txtFileLogger.LogError("Overflow Exception: " + oex.Message);
+                    csvFileLogger.LogError("Format Exception: " + oex.Message);
+                    Console.WriteLine("Press Enter to continue...");
+                    Console.ReadLine();
+                    Console.Clear();
                 }
                 catch (IndexOutOfRangeException iex) // Catch any unhandled exceptions from the menus
                 {
                     consoleLogger.LogError("Input index is out of range.");
                     txtFileLogger.LogError("Index Out Of Range Exception: " + iex.Message);
+                    csvFileLogger.LogError("Format Exception: " + iex.Message);
+                    Console.WriteLine("Press Enter to continue...");
+                    Console.ReadLine();
+                    Console.Clear();
                 }
                 catch (Exception catchAll) // Catch any unhandled exceptions from the menus
                 {
@@ -146,6 +176,8 @@ namespace CRM_DB
 
                     // Step 22: Display the caught error message to the user
                     Console.WriteLine("Error: " + catchAll.Message);
+                    txtFileLogger.LogError("Index Out Of Range Exception: " + catchAll.Message);
+                    csvFileLogger.LogError("Format Exception: " + catchAll.Message);
 
                     // Step 23: Reset console colors back to normal
                     Console.ResetColor();

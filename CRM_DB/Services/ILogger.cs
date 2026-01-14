@@ -1,5 +1,8 @@
-﻿using System;
+﻿using CsvHelper;
+using CsvHelper.Configuration;
+using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -33,9 +36,41 @@ namespace CRM_DB
     internal class CSVFileLogger : ILogger
     {
         public string LogFilePath { get; set; }
-        public void LogError(string message) => Console.WriteLine($"{message} Error has been logged to CSV File");
-        public void LogInfo(string message) => Console.WriteLine($"{message} Info has been logged to CSV File");
-        public void LogWarning(string message) => Console.WriteLine($"{message} Warning has been logged to CSV File");
+
+        public void LogError(string message)
+        {
+            var config = new CsvConfiguration(CultureInfo.InvariantCulture);
+            config.HasHeaderRecord = File.Exists(LogFilePath) ? false : true;
+
+
+            List<CSVLogRecord> records = new List<CSVLogRecord>()
+            {
+                new CSVLogRecord(){
+                DateTime = DateTime.Now,
+                Message = message,
+                LogType = "Error"
+                }
+
+            };
+
+            using (StreamWriter writer = new StreamWriter(LogFilePath, true))
+            {
+                using (CsvWriter csvWriter = new CsvWriter(writer, config))
+                {
+                    csvWriter.WriteRecords(records);
+                }
+            }
+        }
+
+        public void LogInfo(string message)
+        {
+            Console.WriteLine($"{message} Info  has been logged to CSV File");
+        }
+
+        public void LogWarning(string message)
+        {
+            Console.WriteLine($"{message} Warning  has been logged to CSV File");
+        }
     }
 
     internal class ConsoleLogger : ILogger

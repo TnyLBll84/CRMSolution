@@ -14,11 +14,14 @@ namespace CRM_DB
         [Key]
         public int CustomerId { get; set; }
 
-        public string Name { get; set; }
+        public string FirstName { get; set; }
+
+        public string LastName { get; set; }
 
         public int Age { get; set; }
 
         public string CreditCard { get; set; }
+        public byte[] Salt { get; set; }
 
         //Navigation Properties (for Relationships(One to Many))
         public virtual List<Complaint> Complaints { get; set; }

@@ -37,10 +37,10 @@ namespace CRM_DB
         static void Main(string[] args)
         {
 
-            //Testing Code
-            byte[] salt = RandomNumberGenerator.GetBytes(16);
-            string cipherText = cryptoService.Encrypt("hi every one", "P@ssw0rd", salt);
-            string plainText = cryptoService.Decrypt(cipherText, "P@ssw0rd", salt);
+            ////Testing Code
+            //byte[] salt = RandomNumberGenerator.GetBytes(16);
+            //string cipherText = cryptoService.Encrypt("hi every one", "P@ssw0rd", salt);
+            //string plainText = cryptoService.Decrypt(cipherText, "P@ssw0rd", salt);
 
             //Configuration Setup
             // Create Log Directory if not exists
@@ -171,15 +171,10 @@ namespace CRM_DB
                 {
                     // Step 21: Change the text color to red to highlight an error occurred
                     Console.ForegroundColor = ConsoleColor.Red;
-
                     consoleLogger.LogError("An unexpected error occurred. Please try again.");
-
-                    // Step 22: Display the caught error message to the user
                     Console.WriteLine("Error: " + catchAll.Message);
                     txtFileLogger.LogError("Index Out Of Range Exception: " + catchAll.Message);
                     csvFileLogger.LogError("Format Exception: " + catchAll.Message);
-
-                    // Step 23: Reset console colors back to normal
                     Console.ResetColor();
 
                     // Step 24: Wait for user to press Enter before continuing
@@ -255,16 +250,29 @@ namespace CRM_DB
 
         private static void AddCustomer()
         {
-            Console.Write("Please Type Customer Name: ");
-            string customerName = Console.ReadLine();
+            byte[] salt = RandomNumberGenerator.GetBytes(16);
+
+            Console.Write("Please Type Customer First Name: ");
+            string customerFName = Console.ReadLine();
+
+            Console.Write("Please Type Customer Last Name: ");
+            string customerLName = Console.ReadLine();
 
             Console.Write("Please Type Customer Age: ");
             int age = int.Parse(Console.ReadLine());
 
+            Console.Write("Please Type Credit Card Number to be on file (ex: 123-123-123-123): ");
+            string creditCard = Console.ReadLine();
+
+            string cipherText = cryptoService.Encrypt(creditCard, "P@ssw0rd", salt);
+            Console.WriteLine($"DEBUG: cipherText = {cipherText}");
             cRMDBService.AddCustomer(new Customer
             {
-                Name = customerName,
-                Age = age
+                FirstName = customerFName,
+                LastName = customerLName,
+                Age = age,
+                CreditCard = cipherText,
+                Salt = salt
             });
 
             Console.WriteLine("Done Adding New Customer\n");
@@ -274,14 +282,22 @@ namespace CRM_DB
         {
             Console.WriteLine("List Of Customers");
             Console.WriteLine("***************");
-            var table = new ConsoleTable("Id", "Name", "Age");
+            var table = new ConsoleTable("Id", "First Name", "Last Name", "Age", "Credit Card Info.");
 
             foreach (var customer in cRMDBService.GetAllCustomers())
             {
-                table.AddRow(customer.CustomerId, customer.Name, customer.Age);
+                table.AddRow(
+                    customer.CustomerId,
+                    customer.FirstName,
+                    customer.LastName,
+                    customer.Age,
+                    customer.CreditCard   // encrypted string shown as-is
+                );
             }
+
             table.Write();
         }
+
         #endregion
 
 
@@ -475,8 +491,8 @@ namespace CRM_DB
             Customer cust = cRMDBService.GetCustomerByID(customerID);
 
 
-            var table = new ConsoleTable("Id", "Name", "Age");
-            table.AddRow(cust.CustomerId, cust.Name, cust.Age);
+            var table = new ConsoleTable("Id", "First Name", "Last Name", "Age");
+            table.AddRow(cust.CustomerId, cust.FirstName, cust.LastName, cust.Age);
             table.Write();
 
 

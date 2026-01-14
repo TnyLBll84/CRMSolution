@@ -5,24 +5,24 @@
 namespace CRM_DB.Migrations
 {
     /// <inheritdoc />
-    public partial class addCreditCardtoDBwithencryption : Migration
+    public partial class encryptionadded : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<string>(
-                name: "CreditCard",
+            migrationBuilder.AddColumn<byte[]>(
+                name: "Salt",
                 table: "Customers",
-                type: "nvarchar(max)",
+                type: "varbinary(max)",
                 nullable: false,
-                defaultValue: "");
+                defaultValue: new byte[0]);
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropColumn(
-                name: "CreditCard",
+                name: "Salt",
                 table: "Customers");
         }
     }

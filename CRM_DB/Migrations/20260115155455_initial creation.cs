@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace CRM_DB.Migrations
 {
     /// <inheritdoc />
-    public partial class initialCreation : Migration
+    public partial class initialcreation : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -56,6 +56,27 @@ namespace CRM_DB.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Logins",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    CustomerId = table.Column<int>(type: "int", nullable: false),
+                    UserName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Password = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Logins", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Logins_Customers_CustomerId",
+                        column: x => x.CustomerId,
+                        principalTable: "Customers",
+                        principalColumn: "CustomerId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Complaints",
                 columns: table => new
                 {
@@ -92,6 +113,11 @@ namespace CRM_DB.Migrations
                 name: "IX_Complaints_ProductId",
                 table: "Complaints",
                 column: "ProductId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Logins_CustomerId",
+                table: "Logins",
+                column: "CustomerId");
         }
 
         /// <inheritdoc />
@@ -104,10 +130,13 @@ namespace CRM_DB.Migrations
                 name: "Complaints");
 
             migrationBuilder.DropTable(
-                name: "Customers");
+                name: "Logins");
 
             migrationBuilder.DropTable(
                 name: "Products");
+
+            migrationBuilder.DropTable(
+                name: "Customers");
         }
     }
 }

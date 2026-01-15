@@ -1,18 +1,10 @@
 ﻿using ConsoleTables;
-using Microsoft.Extensions.Logging;
-using Microsoft.VisualBasic;
-using System.Collections;
-using System.Collections.Generic;
-using System.ComponentModel.Design;
-using System.Globalization;
-using System.Net;
-using System.Net.Http.Headers;
-using System.Net.Mail;
-using System.Net.Mime;
-using System.Reflection.Metadata;
 using System.IO;
 using CRM_DB;
 using System.Security.Cryptography;
+using Azure.Identity;
+using System.Text;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace CRM_DB
 
@@ -20,27 +12,40 @@ namespace CRM_DB
 
     internal class Program
     {
+        static bool isUserAuthenticated = false;
+
         static CRMDBService cRMDBService = new CRMDBService();
         static CryptoService cryptoService = new CryptoService();
 
         static string logDirectoryPath = String.Empty;
-
-        static string logFileName = String.Empty;
-        static string csvFileName = String.Empty;
+        static string logFileName = String.Empty;        
         static string logFilePath = String.Empty;
+
+        static string csvFileName = String.Empty;
+        static string CSVlogFilePath = String.Empty;
 
         static ConsoleLogger consoleLogger = new ConsoleLogger();
         static TextFileLogger txtFileLogger = new TextFileLogger();
         static CSVFileLogger csvFileLogger = new CSVFileLogger();
 
+        static byte[] salt = new byte[] {
+                                        (byte)241, (byte)108, (byte)133, (byte)224,
+                                        (byte)203, (byte)97,  (byte)234, (byte)72,
+                                        (byte)222, (byte)168, (byte)180, (byte)43,
+                                        (byte)63,  (byte)165, (byte)27,  (byte)85
+                                        };
+
+        static string password = "P@ssw0rd";
+
         #region Applicaton EntryPoint (Main Menu)
         static void Main(string[] args)
         {
-
             ////Testing Code
             //byte[] salt = RandomNumberGenerator.GetBytes(16);
             //string cipherText = cryptoService.Encrypt("hi every one", "P@ssw0rd", salt);
             //string plainText = cryptoService.Decrypt(cipherText, "P@ssw0rd", salt);
+
+            
 
             //Configuration Setup
             // Create Log Directory if not exists
@@ -118,16 +123,41 @@ namespace CRM_DB
 
                         // Step 17: If the user selects 2, open the product menu
                         case 2:
-                            ProductMenu();
+                            if (!isUserAuthenticated)
+                            {
+                                SignIn();
+                            }
+
+                            if (isUserAuthenticated)
+                            {
+                                ProductMenu();
+                            }
                             break;
 
                         // Step 18: If the user selects 3, open the complaint menu
                         case 3:
-                            ComplaintMenu();
+                            if (!isUserAuthenticated)
+                            {
+                                SignIn();
+                            }
+
+                            if (isUserAuthenticated)
+                            {
+                                ComplaintMenu();
+                            }
                             break;
 
                         case 4:
-                            AppointmentMenu();
+                            if (!isUserAuthenticated)
+                            {
+                                SignIn();
+                            }
+
+                            if (isUserAuthenticated)
+                            {
+                                AppointmentMenu();
+                            }
+
                             break;
 
                         // Step 19: If the user selects 4, print goodbye and return to exit the program
@@ -227,7 +257,16 @@ namespace CRM_DB
 
                     // Step 16: If user selected 5, call ViewAllCustomers()
                     case 2:
-                        ViewAllCustomers();
+                        if (!isUserAuthenticated)
+                        {
+                            SignIn();
+                        }
+
+                        if (isUserAuthenticated)
+                        {
+                            ViewAllCustomers();
+                        }
+
                         break;
 
                     // Step 17: If user selected 6, exit this menu and return to main menu
@@ -250,7 +289,7 @@ namespace CRM_DB
 
         private static void AddCustomer()
         {
-            byte[] salt = RandomNumberGenerator.GetBytes(16);
+            //byte[] salt = RandomNumberGenerator.GetBytes(16);
 
             Console.Write("Please Type Customer First Name: ");
             string customerFName = Console.ReadLine();
@@ -264,42 +303,76 @@ namespace CRM_DB
             Console.Write("Please Type Credit Card Number to be on file (ex: 123-123-123-123): ");
             string creditCard = Console.ReadLine();
 
-            string cipherText = cryptoService.Encrypt(creditCard, "P@ssw0rd", salt);
-            Console.WriteLine($"DEBUG: cipherText = {cipherText}");
-            cRMDBService.AddCustomer(new Customer
+            Customer customer = new Customer()
             {
                 FirstName = customerFName,
                 LastName = customerLName,
                 Age = age,
-                CreditCard = cipherText,
-                Salt = salt
-            });
+                CreditCard = cryptoService.Encrypt(creditCard, password, salt)
+            };
+            cRMDBService.AddCustomer(customer);
 
             Console.WriteLine("Done Adding New Customer\n");
+
+            ////////////////// Adding Login Info ///////////////////////
+            Console.Write("Enter Login name: ");
+            string userName = Console.ReadLine();
+
+            Console.Write("Enter Password: ");
+            string userPassword = Console.ReadLine();
+
+
+            Login login = new Login()
+            {
+                CustomerId = customer.CustomerId,
+                UserName = userName,
+                Password = cryptoService.HashPassword(Encoding.UTF8.GetBytes(userPassword), salt)
+
+            };
+            cRMDBService.AddLogin(login);
+
+            Console.WriteLine($"Done Adding Login information");
         }
 
         private static void ViewAllCustomers()
         {
+            Console.Write("Provide Following List Encrypted? (y/n): ");
+            string input = Console.ReadLine();
+
+            bool showEncrypted = true;
+            if (!string.IsNullOrWhiteSpace(input) && input.ToLower() == "n")
+                showEncrypted = false;
+
             Console.WriteLine("List Of Customers");
             Console.WriteLine("***************");
+
             var table = new ConsoleTable("Id", "First Name", "Last Name", "Age", "Credit Card Info.");
 
             foreach (var customer in cRMDBService.GetAllCustomers())
             {
-                table.AddRow(
-                    customer.CustomerId,
-                    customer.FirstName,
-                    customer.LastName,
-                    customer.Age,
-                    customer.CreditCard   // encrypted string shown as-is
-                );
+                string ccValue;
+
+                if (showEncrypted)
+                {
+                    // show encrypted as-is
+                    ccValue = customer.CreditCard;
+                }
+                else
+                {
+                    // show decrypted
+                    ccValue = cryptoService.Decrypt(customer.CreditCard, password, salt);
+                }
+
+                table.AddRow(customer.CustomerId,
+                             customer.FirstName,
+                             customer.LastName,
+                             customer.Age,
+                             ccValue);
             }
 
             table.Write();
         }
-
         #endregion
-
 
         #region Product Menu
         static void ProductMenu()
@@ -386,7 +459,6 @@ namespace CRM_DB
 
         #endregion
 
-
         #region Complaint Menu
         static void ComplaintMenu()
         {
@@ -398,6 +470,7 @@ namespace CRM_DB
 
                 // Step 3: Show menu option 1 which allows adding a new customer complaint
                 Console.WriteLine("   1. Add Customer Complaint");
+
                 // Step 5: Show menu option 3 which displays all complaints in the system
                 Console.WriteLine("   2. View All Complaints");
 
@@ -508,6 +581,33 @@ namespace CRM_DB
 
         #endregion
 
+        #region Login Operations
+        public static void SignIn()
+        {
+            Console.Clear();
+            Console.Write("Enter Login name: ");
+            string userName = Console.ReadLine();
+
+            Console.Write("Enter Password: ");
+
+            string userPassword = Console.ReadLine();
+            string hashedPassword = cryptoService.HashPassword(Encoding.UTF8.GetBytes(userPassword), salt);
+
+            Login loginInfo = cRMDBService.GetLogin(userName, hashedPassword);
+
+            if (loginInfo != null)
+            {
+                isUserAuthenticated = true;
+                Console.WriteLine("Logged Successfully!");
+            }
+            else
+            {
+                Console.WriteLine("Invailed Login Info, Please try again!");
+            }
+
+        }
+
+        #endregion
 
         #region Appointment Menu
         static void AppointmentMenu()

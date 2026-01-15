@@ -10,6 +10,7 @@ namespace CRM_DB
     internal class CRMDBContext : DbContext
     {
         public DbSet<Customer> Customers { get; set; }
+        public DbSet<Login> Logins { get; set; }
         public DbSet<Appointment> Appointments { get; set; }
         public DbSet<Complaint> Complaints { get; set; }
         public DbSet<Product> Products { get; set; }

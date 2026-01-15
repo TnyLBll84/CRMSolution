@@ -21,7 +21,7 @@ namespace CRM_DB
         public int Age { get; set; }
 
         public string CreditCard { get; set; }
-        public byte[] Salt { get; set; }
+
 
         //Navigation Properties (for Relationships(One to Many))
         public virtual List<Complaint> Complaints { get; set; }

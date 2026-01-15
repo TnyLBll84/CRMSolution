@@ -13,27 +13,29 @@ namespace CRM_DB
         private readonly CRMDBContext _context;
         public CRMDBService()
         {
-            _context = new CRMDBContext();
+            this._context = new CRMDBContext();
+
         }
 
-        #region CRM CRUD Operations
+        #region Customer CRUD Operations
         public void AddCustomer(Customer customer)
         {
             if (customer == null)
-                throw new ArgumentNullException("Customer is empty");
+                throw new ArgumentNullException("Customer Object is empty");
 
             this._context.Customers.Add(customer);
             this._context.SaveChanges();
         }
+
         public List<Customer> GetAllCustomers()
         {
 
-            // Recall: select * from customers (SQL)
+            // Recall: select * from blogs (SQL)
 
             // LINQ Query
             // Construct Query Statement in C# using LINQ
             IQueryable<Customer> query = from customer in this._context.Customers
-                                     select customer;
+                                         select customer;
 
             //Execute the Query statement
             List<Customer> customers = query.ToList();
@@ -48,11 +50,10 @@ namespace CRM_DB
             Customer customerObj = this._context
                                        .Customers
                                        .Include("Complaints") // Using Navigatinal Property
-                                       .Where(c => c.CustomerId == id).FirstOrDefault();
+                                       .Where(customer => customer.CustomerId == id).FirstOrDefault();
 
 
             return customerObj;
-        
         }
         public void UpdateCustomer(Customer newCustomer)
         {
@@ -64,6 +65,50 @@ namespace CRM_DB
             this._context.Customers.Remove(customer);
             this._context.SaveChanges();
         }
+        #endregion
+
+        #region Login CRUD Operations
+        public void AddLogin(Login login)
+        {
+            if (login == null)
+                throw new ArgumentNullException("login Object is empty");
+
+            this._context.Logins.Add(login);
+            this._context.SaveChanges();
+        }
+
+        public List<Login> GetAllLogins()
+        {
+
+            // Recall: select * from blogs (SQL)
+
+            // LINQ Query
+            // Construct Query Statement in C# using LINQ
+            IQueryable<Login> query = from login in this._context.Logins
+                                      select login;
+                                    
+
+            //Execute the Query statement
+            List<Login> logins = query.ToList();
+
+            return logins;
+        }
+
+        public Login GetLogin(string username, string password)
+        {
+
+
+            // LINQ Query
+            // Construct Query Statement in C# using LINQ
+            IQueryable<Login> query = from login in this._context.Logins
+                                      where login.UserName == username && login.Password == password
+                                      select login;
+
+            //Execute the Query statement
+            Login loginInfo = query.SingleOrDefault();
+            return loginInfo;
+        }
+
         #endregion
 
         #region CRM Product Operations
@@ -83,7 +128,7 @@ namespace CRM_DB
             // LINQ Query
             // Construct Query Statement in C# using LINQ
             IQueryable<Product> query = from product in this._context.Products
-                                         select product;
+                                        select product;
 
             //Execute the Query statement
             List<Product> products = query.ToList();
@@ -190,7 +235,6 @@ namespace CRM_DB
 
             return complaints;
         }
-
         public Complaint GetComplaintByID(int id)
         {
             // LINQ Query
@@ -216,7 +260,6 @@ namespace CRM_DB
             this._context.SaveChanges();
         }
         #endregion
-
 
     }
 }
